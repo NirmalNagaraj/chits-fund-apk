@@ -1,0 +1,1576 @@
+{
+  "title": "Chit Fund Backend API Documentation",
+  "version": "1.0.0",
+  "description": "Comprehensive API documentation for the Chit Fund Management System",
+  "baseUrl": "http://localhost:3000",
+  "endpoints": [
+    {
+      "path": "/health",
+      "method": "GET",
+      "summary": "Health check endpoint",
+      "description": "Returns the current health status of the API service",
+      "tags": ["Health"],
+      "requestBody": null,
+      "responses": {
+        "200": {
+          "description": "Service is healthy",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["ok", "error"],
+                    "example": "ok"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T10:30:00.000Z"
+                  },
+                  "uptime": {
+                    "type": "number",
+                    "description": "Server uptime in seconds",
+                    "example": 3600.5
+                  },
+                  "environment": {
+                    "type": "string",
+                    "example": "development"
+                  },
+                  "version": {
+                    "type": "string",
+                    "example": "1.0.0"
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Service is healthy"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Service is unhealthy",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Health check failed"
+              },
+              "message": {
+                "type": "string",
+                "example": "Internal server error"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/onboard",
+      "method": "POST",
+      "summary": "Onboard a new user",
+      "description": "Creates a new user account with name, total chits, and mobile number. Also creates an associated chit entry. Validates input data and ensures mobile number uniqueness.",
+      "tags": ["User Management"],
+      "requestBody": {
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "User's full name",
+              "example": "John Doe"
+            },
+            "total_chits": {
+              "type": "integer",
+              "description": "Total number of chits for the user",
+              "minimum": 1,
+              "example": 10
+            },
+            "mobile": {
+              "type": "integer",
+              "description": "User's mobile number",
+              "example": 9876543210
+            }
+          },
+          "required": ["name", "total_chits", "mobile"]
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "User and chit created successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "example": "usr_1234567890"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "total_chits": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "mobile": {
+                    "type": "integer",
+                    "example": 9876543210
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T10:30:00.000Z"
+                  },
+                  "chit": {
+                    "type": "object",
+                    "properties": {
+                      "chit_id": {
+                        "type": "string",
+                        "example": "chit_1234567890"
+                      },
+                      "total_chits": {
+                        "type": "integer",
+                        "example": 10
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                        "example": true
+                      },
+                      "user_id": {
+                        "type": "string",
+                        "example": "usr_1234567890"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00.000Z"
+                      }
+                    }
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "User and chit onboarded successfully"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid input data",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "enum": ["Validation failed"]
+              },
+              "message": {
+                "type": "string",
+                "enum": [
+                  "Name, total_chits, and mobile are required",
+                  "Name must be a non-empty string",
+                  "Total chits must be a positive integer",
+                  "Mobile must be a valid positive number"
+                ]
+              }
+            }
+          }
+        },
+        "409": {
+          "description": "Conflict - Mobile number already exists",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Mobile number already exists"
+              },
+              "message": {
+                "type": "string",
+                "example": "A user with this mobile number already exists"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to create user and chit"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/update/weekly-chits",
+      "method": "POST",
+      "summary": "Update weekly chits",
+      "description": "Creates weekly chit payment entries for all active chits based on the current week configuration",
+      "tags": ["Chit Management"],
+      "requestBody": null,
+      "responses": {
+        "200": {
+          "description": "Weekly chits updated successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Weekly chits updated successfully"
+                  },
+                  "current_week": {
+                    "type": "integer",
+                    "example": 5
+                  },
+                  "payments_created": {
+                    "type": "integer",
+                    "example": 25
+                  },
+                  "chits_processed": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "user_id": {
+                          "type": "string",
+                          "example": "usr_1234567890"
+                        },
+                        "chit_id": {
+                          "type": "string",
+                          "example": "chit_1234567890"
+                        },
+                        "due_amount": {
+                          "type": "number",
+                          "example": 1000
+                        },
+                        "amount_paid": {
+                          "type": "number",
+                          "example": 0
+                        },
+                        "balance": {
+                          "type": "number",
+                          "example": 1000
+                        },
+                        "weekly_installment": {
+                          "type": "number",
+                          "example": 1000
+                        },
+                        "is_paid": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-15T10:30:00.000Z"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Weekly chits updated successfully"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to update weekly chits"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/pay/chit-funds",
+      "method": "POST",
+      "summary": "Make chit payment",
+      "description": "Process a payment for a chit fund installment",
+      "tags": ["Chit Management"],
+      "requestBody": {
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "description": "User's unique identifier",
+              "example": "usr_1234567890"
+            },
+            "chit_id": {
+              "type": "string",
+              "description": "Chit's unique identifier",
+              "example": "chit_1234567890"
+            },
+            "amount": {
+              "type": "number",
+              "description": "Payment amount",
+              "minimum": 0.01,
+              "example": 500
+            },
+            "payment_mode": {
+              "type": "string",
+              "description": "Mode of payment",
+              "example": "cash"
+            }
+          },
+          "required": ["user_id", "chit_id", "amount", "payment_mode"]
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Payment processed successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "payment_id": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "usr_1234567890"
+                  },
+                  "chit_id": {
+                    "type": "string",
+                    "example": "chit_1234567890"
+                  },
+                  "due_amount": {
+                    "type": "number",
+                    "example": 1000
+                  },
+                  "amount_paid": {
+                    "type": "number",
+                    "example": 500
+                  },
+                  "balance": {
+                    "type": "number",
+                    "example": 500
+                  },
+                  "is_paid": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "paid_on": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T10:30:00.000Z"
+                  },
+                  "payment_mode": {
+                    "type": "string",
+                    "example": "cash"
+                  },
+                  "weekly_installment": {
+                    "type": "number",
+                    "example": 1000
+                  },
+                  "transaction_history": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-15T10:30:00.000Z"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "example": 500
+                        },
+                        "mode": {
+                          "type": "string",
+                          "example": "cash"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Payment processed successfully"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid input data",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Validation failed"
+              },
+              "message": {
+                "type": "string",
+                "enum": [
+                  "User ID, chit ID, amount, and payment mode are required",
+                  "Amount must be a positive number",
+                  "Payment mode must be a non-empty string"
+                ]
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Chit payment record not found",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Chit payment not found"
+              },
+              "message": {
+                "type": "string",
+                "example": "No chit payment record found for the provided user and chit"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to process chit payment"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/loan/apply",
+      "method": "POST",
+      "summary": "Apply for a loan",
+      "description": "Submit a loan application with interest rate, type, and borrowed amount",
+      "tags": ["Loan Management"],
+      "requestBody": {
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "description": "User's unique identifier",
+              "example": "usr_1234567890"
+            },
+            "interest_rate": {
+              "type": "string",
+              "description": "Interest rate for the loan",
+              "example": "12.5"
+            },
+            "interest_type": {
+              "type": "string",
+              "description": "Type of interest calculation",
+              "example": "monthly"
+            },
+            "borrowed_amount": {
+              "type": "number",
+              "description": "Amount to be borrowed",
+              "minimum": 0.01,
+              "example": 50000
+            }
+          },
+          "required": ["user_id", "interest_rate", "interest_type", "borrowed_amount"]
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Loan application created successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "loan_id": {
+                    "type": "string",
+                    "example": "loan_1234567890"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "usr_1234567890"
+                  },
+                  "interest_rate": {
+                    "type": "string",
+                    "example": "12.5"
+                  },
+                  "interest_type": {
+                    "type": "string",
+                    "example": "monthly"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T10:30:00.000Z"
+                  },
+                  "borrowed_amount": {
+                    "type": "number",
+                    "example": 50000
+                  },
+                  "balance": {
+                    "type": "number",
+                    "example": 50000
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Loan application created successfully"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid input data",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Validation failed"
+              },
+              "message": {
+                "type": "string",
+                "enum": [
+                  "User ID, interest rate, interest type, and borrowed amount are required",
+                  "Interest rate must be a non-empty string",
+                  "Interest type must be a non-empty string",
+                  "Borrowed amount must be a positive number"
+                ]
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to create loan application"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/loan/pay",
+      "method": "POST",
+      "summary": "Make loan payment",
+      "description": "Process a payment towards a loan",
+      "tags": ["Loan Management"],
+      "requestBody": {
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "description": "User's unique identifier",
+              "example": "usr_1234567890"
+            },
+            "loan_id": {
+              "type": "string",
+              "description": "Loan's unique identifier",
+              "example": "loan_1234567890"
+            },
+            "amount": {
+              "type": "number",
+              "description": "Payment amount",
+              "minimum": 0.01,
+              "example": 5000
+            },
+            "payment_mode": {
+              "type": "string",
+              "description": "Mode of payment",
+              "example": "bank_transfer"
+            }
+          },
+          "required": ["user_id", "loan_id", "amount", "payment_mode"]
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Loan payment processed successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "loan_id": {
+                    "type": "string",
+                    "example": "loan_1234567890"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "usr_1234567890"
+                  },
+                  "borrowed_amount": {
+                    "type": "number",
+                    "example": 50000
+                  },
+                  "balance": {
+                    "type": "number",
+                    "example": 45000
+                  },
+                  "amount_paid": {
+                    "type": "number",
+                    "example": 5000
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "is_paid": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "payment_mode": {
+                    "type": "string",
+                    "example": "bank_transfer"
+                  },
+                  "transaction_history": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "timestamp": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-15T10:30:00.000Z"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "example": 5000
+                        },
+                        "mode": {
+                          "type": "string",
+                          "example": "bank_transfer"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Loan payment processed successfully"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid input data",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Validation failed"
+              },
+              "message": {
+                "type": "string",
+                "enum": [
+                  "User ID, loan ID, amount, and payment mode are required",
+                  "Amount must be a positive number",
+                  "Payment mode must be a non-empty string"
+                ]
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Loan not found",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Loan not found"
+              },
+              "message": {
+                "type": "string",
+                "example": "No active loan found for the provided user and loan ID"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to process loan payment"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/users/details",
+      "method": "GET",
+      "summary": "Get all users basic details",
+      "description": "Retrieve basic information for all users in the system",
+      "tags": ["User Management"],
+      "requestBody": null,
+      "responses": {
+        "200": {
+          "description": "Users retrieved successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "string",
+                      "example": "usr_1234567890"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "mobile": {
+                      "type": "integer",
+                      "example": 9876543210
+                    },
+                    "total_chits": {
+                      "type": "integer",
+                      "example": 10
+                    }
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Users retrieved successfully"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to retrieve users"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/users/details/:id",
+      "method": "GET",
+      "summary": "Get detailed user information",
+      "description": "Retrieve comprehensive information for a specific user including chit payment history and loan details",
+      "tags": ["User Management"],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "User's unique identifier",
+          "schema": {
+            "type": "string",
+            "example": "usr_1234567890"
+          }
+        }
+      ],
+      "requestBody": null,
+      "responses": {
+        "200": {
+          "description": "User details retrieved successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "example": "usr_1234567890"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "mobile": {
+                    "type": "integer",
+                    "example": 9876543210
+                  },
+                  "total_chits": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "chit_payment_history": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-15T10:30:00.000Z"
+                        },
+                        "user_id": {
+                          "type": "string",
+                          "example": "usr_1234567890"
+                        },
+                        "chit_id": {
+                          "type": "string",
+                          "example": "chit_1234567890"
+                        },
+                        "due_amount": {
+                          "type": "number",
+                          "example": 1000
+                        },
+                        "amount_paid": {
+                          "type": "number",
+                          "example": 500
+                        },
+                        "balance": {
+                          "type": "number",
+                          "example": 500
+                        },
+                        "weekly_installment": {
+                          "type": "number",
+                          "example": 1000
+                        },
+                        "payment_mode": {
+                          "type": "string",
+                          "example": "cash"
+                        },
+                        "paid_on": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-15T10:30:00.000Z"
+                        },
+                        "is_paid": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "transaction_history": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "timestamp": {
+                                "type": "string",
+                                "format": "date-time",
+                                "example": "2024-01-15T10:30:00.000Z"
+                              },
+                              "amount": {
+                                "type": "number",
+                                "example": 500
+                              },
+                              "mode": {
+                                "type": "string",
+                                "example": "cash"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "loan_details": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-15T10:30:00.000Z"
+                        },
+                        "loan_id": {
+                          "type": "string",
+                          "example": "loan_1234567890"
+                        },
+                        "is_active": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "user_id": {
+                          "type": "string",
+                          "example": "usr_1234567890"
+                        },
+                        "interest_rate": {
+                          "type": "string",
+                          "example": "12.5"
+                        },
+                        "interest_type": {
+                          "type": "string",
+                          "example": "monthly"
+                        },
+                        "borrowed_amount": {
+                          "type": "number",
+                          "example": 50000
+                        },
+                        "balance": {
+                          "type": "number",
+                          "example": 45000
+                        },
+                        "amount_paid": {
+                          "type": "number",
+                          "example": 5000
+                        },
+                        "transaction_history": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "timestamp": {
+                                "type": "string",
+                                "format": "date-time",
+                                "example": "2024-01-15T10:30:00.000Z"
+                              },
+                              "amount": {
+                                "type": "number",
+                                "example": 5000
+                              },
+                              "mode": {
+                                "type": "string",
+                                "example": "bank_transfer"
+                              }
+                            }
+                          }
+                        },
+                        "is_paid": {
+                          "type": "boolean",
+                          "example": false
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "User details retrieved successfully"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "User not found",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "User not found"
+              },
+              "message": {
+                "type": "string",
+                "example": "No user found with the provided ID"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to retrieve user details"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/analytics",
+      "method": "GET",
+      "summary": "Get system analytics",
+      "description": "Retrieve comprehensive analytics data including user counts, chit and loan statistics, payment amounts, and pending balances",
+      "tags": ["Analytics"],
+      "requestBody": null,
+      "responses": {
+        "200": {
+          "description": "Analytics data retrieved successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "total_persons_applied_for_chits": {
+                    "type": "integer",
+                    "description": "Total number of unique users who have applied for chits",
+                    "example": 150
+                  },
+                  "total_persons_applied_for_loans": {
+                    "type": "integer",
+                    "description": "Total number of unique users who have applied for loans",
+                    "example": 75
+                  },
+                  "total_number_of_active_chits": {
+                    "type": "integer",
+                    "description": "Total number of active chits in the system",
+                    "example": 200
+                  },
+                  "total_pending_loans": {
+                    "type": "integer",
+                    "description": "Total number of active/pending loans",
+                    "example": 45
+                  },
+                  "total_pending_chits": {
+                    "type": "integer",
+                    "description": "Total number of unpaid chit payments",
+                    "example": 120
+                  },
+                  "amount_in_chits": {
+                    "type": "number",
+                    "description": "Total amount paid in chits (sum of amount_paid from chit_payments)",
+                    "example": 250000
+                  },
+                  "amount_pending_to_be_paid_chits": {
+                    "type": "number",
+                    "description": "Total amount pending to be paid for chits (sum of balance from chit_payments)",
+                    "example": 180000
+                  },
+                  "amount_provided_for_loans": {
+                    "type": "number",
+                    "description": "Total amount provided as loans (sum of borrowed_amount from loans)",
+                    "example": 500000
+                  },
+                  "amount_paid_for_loans": {
+                    "type": "number",
+                    "description": "Total amount paid towards loans (sum of amount_paid from loans)",
+                    "example": 125000
+                  },
+                  "count_of_unpaid_chits": {
+                    "type": "integer",
+                    "description": "Count of chit payments that are not fully paid",
+                    "example": 85
+                  },
+                  "count_of_unpaid_loans": {
+                    "type": "integer",
+                    "description": "Count of loans that are not fully paid",
+                    "example": 35
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Analytics data retrieved successfully"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to retrieve analytics data"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/chits/deactive",
+      "method": "POST",
+      "summary": "Deactivate a chit",
+      "description": "Force close/deactivate a chit by setting is_active to false",
+      "tags": ["Chit Management"],
+      "requestBody": {
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "chit_id": {
+              "type": "string",
+              "description": "Chit's unique identifier",
+              "example": "chit_1234567890"
+            },
+            "reason": {
+              "type": "string",
+              "description": "Optional reason for deactivation",
+              "example": "Customer request"
+            }
+          },
+          "required": ["chit_id"]
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Chit deactivated successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "chit_id": {
+                    "type": "string",
+                    "example": "chit_1234567890"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "usr_1234567890"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "deactivated_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T10:30:00.000Z"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "example": "Customer request"
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Chit deactivated successfully"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid input data",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Validation failed"
+              },
+              "message": {
+                "type": "string",
+                "example": "Chit ID is required"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Chit not found or already inactive",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Chit not found"
+              },
+              "message": {
+                "type": "string",
+                "example": "No active chit found with the provided ID"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to deactivate chit"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "path": "/loan/deactive",
+      "method": "POST",
+      "summary": "Deactivate a loan",
+      "description": "Force close/deactivate a loan by setting is_active to false",
+      "tags": ["Loan Management"],
+      "requestBody": {
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "loan_id": {
+              "type": "string",
+              "description": "Loan's unique identifier",
+              "example": "loan_1234567890"
+            },
+            "reason": {
+              "type": "string",
+              "description": "Optional reason for deactivation",
+              "example": "Early closure requested"
+            }
+          },
+          "required": ["loan_id"]
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Loan deactivated successfully",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": true
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "loan_id": {
+                    "type": "string",
+                    "example": "loan_1234567890"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "example": "usr_1234567890"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "deactivated_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T10:30:00.000Z"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "example": "Early closure requested"
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "example": "Loan deactivated successfully"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request - Invalid input data",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Validation failed"
+              },
+              "message": {
+                "type": "string",
+                "example": "Loan ID is required"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Loan not found or already inactive",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Loan not found"
+              },
+              "message": {
+                "type": "string",
+                "example": "No active loan found with the provided ID"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "example": false
+              },
+              "error": {
+                "type": "string",
+                "example": "Internal server error"
+              },
+              "message": {
+                "type": "string",
+                "example": "Failed to deactivate loan"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "commonResponseStructure": {
+    "success": {
+      "type": "boolean",
+      "description": "Indicates if the request was successful"
+    },
+    "data": {
+      "type": "object",
+      "description": "Response data (present on successful requests)"
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable message describing the result"
+    },
+    "error": {
+      "type": "string",
+      "description": "Error type/category (present on failed requests)"
+    }
+  },
+  "commonStatusCodes": {
+    "200": "OK - Request successful",
+    "201": "Created - Resource created successfully",
+    "400": "Bad Request - Invalid input data or validation failed",
+    "404": "Not Found - Requested resource not found",
+    "409": "Conflict - Resource already exists or conflict with current state",
+    "500": "Internal Server Error - Server encountered an error"
+  },
+  "notes": {
+    "timestamps": "All timestamps are returned in ISO 8601 format and converted to IST (Indian Standard Time)",
+    "validation": "All endpoints perform comprehensive input validation before processing",
+    "errorHandling": "Consistent error response structure across all endpoints",
+    "authentication": "Currently no authentication is implemented - all endpoints are publicly accessible",
+    "database": "Uses Supabase as the backend database with PostgreSQL",
+    "idGeneration": "All IDs are generated using timestamp-based unique identifiers with appropriate prefixes"
+  }
+}
